@@ -6,12 +6,12 @@
         http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd">
 	<display-name>gatekeeper</display-name>
 	<context-param>
-		<param-name>javax.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL</param-name>
+		<param-name>jakarta.faces.INTERPRET_EMPTY_STRING_SUBMITTED_VALUES_AS_NULL</param-name>
 		<param-value>true</param-value>
 	</context-param>
 	<servlet>
 		<servlet-name>facesServlet</servlet-name>
-		<servlet-class>javax.faces.webapp.FacesServlet</servlet-class>
+		<servlet-class>jakarta.faces.webapp.FacesServlet</servlet-class>
 		<load-on-startup>1</load-on-startup>
 	</servlet>
 	<servlet-mapping>
