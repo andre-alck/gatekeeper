@@ -19,7 +19,13 @@
 				requiredMessage="Please fill in the 'Password' field."
 				messageValue="Password" />
 		</p:panelGrid>
-		<p:commandButton value="Submit" type="submit" update="grid" />
+		<p:commandButton value="Submit" type="submit"
+			update="grid, alert-text" action="#{signUpMB.signUp}" />
 	</h:form>
+
+	<p:outputPanel id="alert-text">
+		<h:outputText value="This username has already been taken."
+			rendered="#{signUpMB.user.registered}" styleClass="error" />
+	</p:outputPanel>
 </h:body>
 </html>
