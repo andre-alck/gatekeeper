@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+
+<composite:interface>
+	<composite:attribute name="inputTextValue" />
+	<composite:attribute name="requiredMessage" />
+	<composite:attribute name="messageValue" />
+</composite:interface>
+
+<composite:implementation>
+	<p:panelGrid columns="2">
+		<h:panelGroup>
+			<span class="ui-float-label"> <p:inputText id="name-input"
+					value="#{cc.attrs.inputTextValue}" required="true"
+					requiredMessage="#{cc.attrs.requiredMessage}" style="width:150px" />
+				<p:outputLabel for="name-input" value="#{cc.attrs.messageValue}"
+					style="width:150px" />
+			</span>
+		</h:panelGroup>
+		<p:message for="name-input" display="text" />
+	</p:panelGrid>
+</composite:implementation>
+
+</html>
+
