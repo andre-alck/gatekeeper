@@ -3,13 +3,18 @@ package br.com.asac.gatekeeper.signup.controller;
 import java.io.Serializable;
 
 public class User implements Serializable {
-	private static final long serialVersionUID = 6498345365150256780L;
-	
+
+	private static final long serialVersionUID = 5838614084149816599L;
+
 	private String name;
 	private String password;
-	private boolean registered;
 
 	public User() {
+	}
+	
+	public User(String name, String password) {
+		this.name = name;
+		this.password = password;
 	}
 
 	public String getName() {
@@ -26,13 +31,5 @@ public class User implements Serializable {
 
 	public void setPassword(String password) {
 		this.password = password;
-	}
-
-	public boolean isRegistered() {
-		return registered;
-	}
-
-	public void setRegistered(boolean registered) {
-		this.registered = registered;
 	}
 }
