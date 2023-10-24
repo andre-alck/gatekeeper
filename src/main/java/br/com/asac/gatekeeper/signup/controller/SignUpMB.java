@@ -2,9 +2,9 @@ package br.com.asac.gatekeeper.signup.controller;
 
 import java.io.Serializable;
 
-import org.primefaces.PrimeFaces;
-
 import br.com.asac.gatekeeper.signup.service.SignUpService;
+import br.com.asac.gatekeeper.user.model.User;
+import br.com.asac.gatekeeper.user.service.UserService;
 import br.com.asac.gatekeeper.utils.controller.UIComponentUtils;
 import br.com.asac.gatekeeper.utils.controller.primefaces.UiComponentUtilsPrimeFaces;
 import jakarta.enterprise.context.RequestScoped;
@@ -18,6 +18,7 @@ public class SignUpMB implements Serializable {
 
 	private User user;
 	private SignUpService signUpService;
+	private UserService userService;
 	private UIComponentUtils uiComponentUtils;
 	public static String USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE = "username-already-taken";
 
@@ -34,7 +35,7 @@ public class SignUpMB implements Serializable {
 	}
 
 	public void signUp() {
-		if (this.getSignUpService().isUserRegistered(this.getUser())) {
+		if (this.getUserService().isUserRegistered(this.getUser())) {
 			this.getUiComponentUtils().showDialog((USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE));
 		} else {
 			this.getSignUpService().signUp(this.getUser());
@@ -55,6 +56,14 @@ public class SignUpMB implements Serializable {
 
 	public void setSignUpService(SignUpService signUpService) {
 		this.signUpService = signUpService;
+	}
+
+	public UserService getUserService() {
+		return userService;
+	}
+
+	public void setUserService(UserService userService) {
+		this.userService = userService;
 	}
 
 	public UIComponentUtils getUiComponentUtils() {

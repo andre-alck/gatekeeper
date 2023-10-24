@@ -1,20 +1,14 @@
 package br.com.asac.gatekeeper.signup.repository;
 
-import br.com.asac.gatekeeper.signup.controller.User;
+import java.io.Serializable;
 
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.sql.Statement;
+import br.com.asac.gatekeeper.user.model.User;
 
-public class SignUpRepository {
+public class SignUpRepository implements Serializable {
+
+	private static final long serialVersionUID = 8038812745104363424L;
 
 	public void signUp(User user) {
-	}
-
-	public boolean isUserRegistered(User user) {
-		return true;
 	}
 
 }

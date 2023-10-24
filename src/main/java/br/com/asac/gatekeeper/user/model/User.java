@@ -1,4 +1,4 @@
-package br.com.asac.gatekeeper.signup.controller;
+package br.com.asac.gatekeeper.user.model;
 
 import java.io.Serializable;
 
@@ -11,7 +11,7 @@ public class User implements Serializable {
 
 	public User() {
 	}
-	
+
 	public User(String name, String password) {
 		this.name = name;
 		this.password = password;
