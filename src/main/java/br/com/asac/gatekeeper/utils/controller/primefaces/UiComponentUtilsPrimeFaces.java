@@ -1,12 +1,14 @@
 package br.com.asac.gatekeeper.utils.controller.primefaces;
 
+import java.io.Serializable;
+
 import org.primefaces.PrimeFaces;
 
 import br.com.asac.gatekeeper.utils.controller.UIComponentUtils;
 
-public class UiComponentUtilsPrimeFaces implements UIComponentUtils {
-	
-	private String deleteme;
+public class UiComponentUtilsPrimeFaces implements UIComponentUtils, Serializable {
+
+	private static final long serialVersionUID = -9098320772959284175L;
 
 	@Override
 	public void showDialog(String dialogVariableName) {
@@ -15,13 +17,5 @@ public class UiComponentUtilsPrimeFaces implements UIComponentUtils {
 		statement.append(dialogVariableName);
 		statement.append("').show();");
 		PrimeFaces.current().executeScript(statement.toString());
-	}
-
-	public String getDeleteme() {
-		return deleteme;
-	}
-
-	public void setDeleteme(String deleteme) {
-		this.deleteme = deleteme;
 	}
 }

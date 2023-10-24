@@ -1,10 +1,16 @@
 package br.com.asac.gatekeeper.utils.repository;
 
+import java.io.Serializable;
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 
-public class DatabaseConnectionUtils {
+import br.com.asac.gatekeeper.utils.crosscutting.GateKeeperException;
+
+public class DatabaseConnectionUtils implements Serializable {
+
+	private static final long serialVersionUID = -2114968805554789890L;
+
 	private static final String DATABASE_DRIVER = "mysql";
 	private static final String DATABASE_NAME = "gatekeeper";
 	private static final String DATABASE_USER = "root";
@@ -17,15 +23,13 @@ public class DatabaseConnectionUtils {
 			String url = createUrl();
 			connection = DriverManager.getConnection(url);
 		} catch (SQLException e) {
-			e.printStackTrace();
-			// todo: impl
+			throw new GateKeeperException(e.getMessage());
 		}
 
 		return connection;
 	}
 
 	private static String createUrl() {
-		// "jdbc:mysql://localhost/learning?user=root&password=my-secret-pw"
 		StringBuilder url = new StringBuilder();
 		url.append("jdbc:");
 		url.append(DatabaseConnectionUtils.getDatabaseDriver());

@@ -1,10 +1,14 @@
 package br.com.asac.gatekeeper.signup.service;
 
+import java.io.Serializable;
+
 import br.com.asac.gatekeeper.signup.controller.User;
 import br.com.asac.gatekeeper.signup.repository.SignUpRepository;
 
-public class SignUpService {
+public class SignUpService implements Serializable {
 
+	private static final long serialVersionUID = 4238282803098411106L;
+	
 	private SignUpRepository signUpRepository;
 
 	public SignUpService() {
