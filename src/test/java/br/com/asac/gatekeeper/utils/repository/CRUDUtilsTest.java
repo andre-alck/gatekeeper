@@ -1,16 +1,31 @@
 package br.com.asac.gatekeeper.utils.repository;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.List;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.ValueSource;
 
 import br.com.asac.gatekeeper.utils.crosscutting.GateKeeperException;
 
-public class CRUDUtilsTest {
+public class CRUDUtilsTest implements Serializable {
 
-	// serialize?
-	class XPTO {
+	private static final long serialVersionUID = 5690872365954883302L;
+
+	private static int amountOfXPTOInsertedRegisters;
+	private static int amountOfFooInsertedRegisters;
+
+	private class XPTO implements Serializable {
+
+		private static final long serialVersionUID = 2523622552010222753L;
+
 		private String x;
 		private int p;
 		private byte t;
@@ -26,6 +41,7 @@ public class CRUDUtilsTest {
 			this.o = o;
 		}
 
+		@SuppressWarnings("unused")
 		public String getX() {
 			return x;
 		}
@@ -34,6 +50,7 @@ public class CRUDUtilsTest {
 			this.x = x;
 		}
 
+		@SuppressWarnings("unused")
 		public int getP() {
 			return p;
 		}
@@ -42,6 +59,7 @@ public class CRUDUtilsTest {
 			this.p = p;
 		}
 
+		@SuppressWarnings("unused")
 		public byte getT() {
 			return t;
 		}
@@ -50,6 +68,7 @@ public class CRUDUtilsTest {
 			this.t = t;
 		}
 
+		@SuppressWarnings("unused")
 		public float getO() {
 			return o;
 		}
@@ -60,8 +79,9 @@ public class CRUDUtilsTest {
 
 	}
 
-	// serialize?
-	class CRUDUtilsXPTO extends CRUDUtils<XPTO> {
+	private class CRUDUtilsXPTO extends CRUDUtils<XPTO> implements Serializable {
+
+		private static final long serialVersionUID = -5009375526557004560L;
 
 		public CRUDUtilsXPTO() {
 			super("xpto");
@@ -84,8 +104,10 @@ public class CRUDUtilsTest {
 		}
 	}
 
-	// serialize?
-	class Foo {
+	private class Foo implements Serializable {
+
+		private static final long serialVersionUID = -2412047218655443890L;
+
 		private String bar;
 
 		public Foo() {
@@ -95,6 +117,7 @@ public class CRUDUtilsTest {
 			this.bar = bar;
 		}
 
+		@SuppressWarnings("unused")
 		public String getBar() {
 			return bar;
 		}
@@ -106,7 +129,9 @@ public class CRUDUtilsTest {
 	}
 
 	// serialize?
-	class CRUDUtilsFoo extends CRUDUtils<Foo> {
+	private class CRUDUtilsFoo extends CRUDUtils<Foo> implements Serializable {
+
+		private static final long serialVersionUID = -8011793463540652452L;
 
 		public CRUDUtilsFoo() {
 			super("foo");
@@ -124,40 +149,61 @@ public class CRUDUtilsTest {
 		}
 	}
 
+	@BeforeAll
+	static void clear() {
+		new CRUDJanitor().truncateAllTables();
+	}
+
 	@Test
-	void testInsertXPTO() throws SQLException {
+	void givenEmptyDatabase_whenReadingData_thenListingShouldBeEmpty() {
 		// arrange
-		XPTO xpto = new XPTO("x", -1, (byte) 127, 0.5f);
 		CRUDUtilsXPTO utilsXPTO = new CRUDUtilsXPTO();
 
 		// act
-		utilsXPTO.create(xpto);
+		List<XPTO> xptos = (List<XPTO>) utilsXPTO.read();
 
 		// assert
+		assertTrue(xptos.isEmpty());
 	}
 
-	@Test
-	void testInsertFoo() throws SQLException {
+	@ParameterizedTest
+	@ValueSource(ints = { 1, 3, 5, 10 })
+	void givenXInsertions_whenReadingXPTOData_thenListingShouldReturnX(int times) {
 		// arrange
-		Foo foo = new Foo("bar");
-		CRUDUtilsFoo utilsFoo = new CRUDUtilsFoo();
+		CRUDUtilsXPTO utilsXPTO = new CRUDUtilsXPTO();
+		CRUDUtilsTest.amountOfXPTOInsertedRegisters += times;
 
 		// act
-		utilsFoo.create(foo);
+		for (int i = 0; i < times; i++) {
+			XPTO xpto = new XPTO("x", -1, (byte) 127, 0.5f);
+			utilsXPTO.create(xpto);
+		}
+		List<XPTO> xptos = (List<XPTO>) utilsXPTO.read();
 
 		// assert
+		int expectedSize = amountOfXPTOInsertedRegisters;
+		int actualSize = xptos.size();
+		assertEquals(expectedSize, actualSize);
 	}
 
-	@Test
-	void testReadFoo() throws SQLException {
+	@ParameterizedTest
+	@ValueSource(ints = { 1, 3, 5, 10 })
+	void givenXInsertions_whenReadingFooData_thenListingShouldReturnX(int times) {
 		// arrange
-		Foo foo = new Foo("bar");
 		CRUDUtilsFoo utilsFoo = new CRUDUtilsFoo();
+		CRUDUtilsTest.amountOfFooInsertedRegisters += times;
 
 		// act
-		utilsFoo.read();
+		for (int i = 0; i < times; i++) {
+			Foo foo = new Foo("bar");
+			utilsFoo.create(foo);
+		}
+		List<Foo> foos = (List<Foo>) utilsFoo.read();
 
 		// assert
+		int expectedSize = amountOfFooInsertedRegisters;
+		int actualSize = foos.size();
+		assertEquals(expectedSize, actualSize);
 	}
 
 }
