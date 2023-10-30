@@ -5,10 +5,8 @@ import java.lang.reflect.Field;
 import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.List;
 
 import br.com.asac.gatekeeper.utils.crosscutting.GateKeeperException;
 
@@ -27,7 +25,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 	@Override
 	public void create(T t) {
 		try {
-			this.getConnection().createStatement().executeQuery(insertGenericQueryForT(t));
+			this.getConnection().createStatement().executeUpdate(insertGenericQueryForT(t));
 		} catch (Exception e) {
 			throw new GateKeeperException(e.getMessage());
 		}
@@ -43,7 +41,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		Field[] fieldsFromGenericClass = t.getClass().getDeclaredFields();
 
 		for (int i = 0; i < fieldsFromGenericClass.length; i++) {
-			if (!isFieldAReferenceToTheClassItself(fieldsFromGenericClass[i])) {
+			if (isFieldValid(fieldsFromGenericClass[i])) {
 				query.append(fieldsFromGenericClass[i].getName());
 
 				if (i == fieldsFromGenericClass.length - 2) {
@@ -56,7 +54,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		query.append(") VALUES (");
 
 		for (int i = 0; i < fieldsFromGenericClass.length; i++) {
-			if (!isFieldAReferenceToTheClassItself(fieldsFromGenericClass[i])) {
+			if (isFieldValid(fieldsFromGenericClass[i])) {
 				String classAttributeCapitalized = fieldsFromGenericClass[i].getName().substring(0, 1).toUpperCase()
 						+ fieldsFromGenericClass[i].getName().substring(1,
 								fieldsFromGenericClass[i].getName().length());
@@ -86,8 +84,8 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		return query.toString();
 	}
 
-	private boolean isFieldAReferenceToTheClassItself(Field field) {
-		return field.getName().contains("this");
+	private boolean isFieldValid(Field field) {
+		return !(field.getName().contains("this") || field.getName().contains("serialVersionUID"));
 	}
 
 	@Override
