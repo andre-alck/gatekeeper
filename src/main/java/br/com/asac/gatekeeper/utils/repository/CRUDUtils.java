@@ -23,14 +23,14 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 	private String table;
 
 	public CRUDUtils(String table) {
-		connection = DatabaseConnectionUtils.getConnection();
+		this.initConnection();
 		this.setTable(table);
 	}
 
 	@Override
 	public void create(T t) {
 		try {
-			this.getConnection().createStatement().executeUpdate(insertGenericQueryForT(t));
+			this.getConnection().createStatement().executeUpdate(this.insertGenericQueryForT(t));
 		} catch (Exception e) {
 			throw new GateKeeperException(e.getMessage());
 		}
@@ -42,17 +42,17 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		query.append(this.getTable());
 		query.append("(");
 
-		List<Field> fieldsFromGenericClass = retrieveValidFieldsFromGenericClass(t);
+		List<Field> fieldsFromGenericClass = this.retrieveValidFieldsFromGenericClass(t);
 		fieldsFromGenericClass.forEach(field -> {
 			query.append(field.getName());
 			query.append(", ");
 		});
 
-		deleteExtraCommaAndSpace(query);
+		this.deleteExtraCommaAndSpace(query);
 		query.append(") VALUES (");
 
 		fieldsFromGenericClass.forEach(field -> {
-			String getter = generateGetterMethodSignature(field.getName());
+			String getter = this.generateGetterMethodSignature(field.getName());
 			String value = null;
 
 			try {
@@ -72,14 +72,14 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 			query.append(", ");
 		});
 
-		deleteExtraCommaAndSpace(query);
+		this.deleteExtraCommaAndSpace(query);
 		query.append(")");
 		return query.toString();
 	}
 
 	private List<Field> retrieveValidFieldsFromGenericClass(T t) {
 		List<Field> allFields = Arrays.asList(t.getClass().getDeclaredFields());
-		return allFields.stream().filter(tElement -> isFieldValid(tElement)).toList();
+		return allFields.stream().filter(tElement -> this.isFieldValid(tElement)).toList();
 	}
 
 	private boolean isFieldValid(Field field) {
@@ -100,15 +100,17 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 	@Override
 	public Collection<T> read() {
-		String query = "SELECT * FROM " + this.getTable();
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT * FROM ");
+		query.append(this.getTable());
 
 		Collection<T> ts = new ArrayList<>();
 		ResultSet rs = null;
 		try {
-			rs = connection.createStatement().executeQuery(query);
+			rs = this.getConnection().createStatement().executeQuery(query.toString());
 
 			while (rs.next()) {
-				T t = rowMapper(rs);
+				T t = this.rowMapper(rs);
 				ts.add(t);
 			}
 		} catch (SQLException e) {
@@ -126,7 +128,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 	@Override
 	public void update(T t) {
-		Map<String, Object> map = retrieveMapBetweenFieldNameAndItsValue(t);
+		Map<String, Object> map = this.retrieveMapBetweenFieldNameAndItsValue(t);
 		String key = map.keySet().iterator().next();
 		Object value = map.get(key);
 
@@ -135,8 +137,8 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		query.append(this.getTable());
 		query.append(" SET ");
 
-		T tfromDatabase = find(t);
-		generateUpdateBasedOnFieldsOfGenericClass(t, tfromDatabase, query);
+		T tfromDatabase = this.find(t);
+		this.generateUpdateBasedOnFieldsOfGenericClass(t, tfromDatabase, query);
 
 		query.append(" WHERE ");
 
@@ -145,7 +147,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 		query.append(value);
 		query.append("\"");
-		
+
 		try {
 			this.getConnection().createStatement().executeUpdate(query.toString());
 		} catch (Exception e) {
@@ -154,8 +156,8 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 	}
 
 	private Map<String, Object> retrieveMapBetweenFieldNameAndItsValue(T t) {
-		String nameOfIdField = retrieveNameOfIdFieldFromGenericClass(t);
-		Object valueOfIdField = retrieveValueOfIdField(t, nameOfIdField);
+		String nameOfIdField = this.retrieveNameOfIdFieldFromGenericClass(t);
+		Object valueOfIdField = this.retrieveValueOfIdField(t, nameOfIdField);
 
 		Map<String, Object> idAndValue = new HashMap<>();
 		idAndValue.put(nameOfIdField, valueOfIdField);
@@ -164,12 +166,12 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 	}
 
 	private String retrieveNameOfIdFieldFromGenericClass(T t) {
-		Optional<Field> optionalOfIdField = retrieveOptionalOfIdField(t);
+		Optional<Field> optionalOfIdField = this.retrieveOptionalOfIdField(t);
 		return optionalOfIdField.get().getName();
 	}
 
 	private Optional<Field> retrieveOptionalOfIdField(T t) {
-		Optional<Field> optionalOfIdField = retrieveValidFieldsFromGenericClass(t).stream()
+		Optional<Field> optionalOfIdField = this.retrieveValidFieldsFromGenericClass(t).stream()
 				.filter(tElement -> tElement.isAnnotationPresent(Id.class)).findFirst();
 
 		if (optionalOfIdField.isEmpty()) {
@@ -185,14 +187,8 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		return optionalOfIdField;
 	}
 
-	private List<Field> retrieveValidFieldsFromGenericClassForUpdate(T t) {
-		List<Field> validFields = new ArrayList<>(retrieveValidFieldsFromGenericClass(t));
-		validFields.removeIf(f -> f.isAnnotationPresent(Id.class));
-		return validFields;
-	}
-
 	private Object retrieveValueOfIdField(T t, String nameOfIdField) {
-		String getter = generateGetterMethodSignature(nameOfIdField);
+		String getter = this.generateGetterMethodSignature(nameOfIdField);
 		Object value = null;
 		try {
 			value = (Object) t.getClass().getMethod(getter).invoke(t);
@@ -204,9 +200,9 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 	}
 
 	private void generateUpdateBasedOnFieldsOfGenericClass(T tNew, T tfromDatabase, StringBuilder query) {
-		List<Field> validFieldsFromGenericClass = retrieveValidFieldsFromGenericClassForUpdate(tNew);
+		List<Field> validFieldsFromGenericClass = this.retrieveValidFieldsFromGenericClassForUpdate(tNew);
 		validFieldsFromGenericClass.forEach(field -> {
-			String getter = generateGetterMethodSignature(field.getName());
+			String getter = this.generateGetterMethodSignature(field.getName());
 			String valueNew;
 			String valueFromDatabase;
 
@@ -232,11 +228,17 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 				throw new GateKeeperException(e.getMessage());
 			}
 		});
-		deleteExtraCommaAndSpace(query);
+		this.deleteExtraCommaAndSpace(query);
+	}
+
+	private List<Field> retrieveValidFieldsFromGenericClassForUpdate(T t) {
+		List<Field> validFields = new ArrayList<>(this.retrieveValidFieldsFromGenericClass(t));
+		validFields.removeIf(f -> f.isAnnotationPresent(Id.class));
+		return validFields;
 	}
 
 	public T find(T t) {
-		Map<String, Object> map = retrieveMapBetweenFieldNameAndItsValue(t);
+		Map<String, Object> map = this.retrieveMapBetweenFieldNameAndItsValue(t);
 		String key = map.keySet().iterator().next();
 		Object value = map.get(key);
 
@@ -254,10 +256,10 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		T tFromDatabase = null;
 		ResultSet rs = null;
 		try {
-			rs = connection.createStatement().executeQuery(query.toString());
+			rs = this.getConnection().createStatement().executeQuery(query.toString());
 
 			while (rs.next()) {
-				tFromDatabase = rowMapper(rs);
+				tFromDatabase = this.rowMapper(rs);
 			}
 		} catch (SQLException e) {
 			throw new GateKeeperException(e.getMessage());
@@ -274,12 +276,43 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 	@Override
 	public void delete(T t) {
+		StringBuilder query = new StringBuilder();
+		query.append("DELETE FROM ");
+		query.append(this.getTable());
+		query.append(" WHERE ");
+
+		Map<String, Object> map = this.retrieveMapBetweenFieldNameAndItsValue(t);
+		String key = map.keySet().iterator().next();
+		Object value = map.get(key);
+
+		query.append(key);
+		query.append(" = ");
+
+		if (value instanceof String) {
+			query.append("\"");
+			query.append(value);
+			query.append("\"");
+		} else {
+			query.append(value);
+		}
+
+		try {
+			this.getConnection().createStatement().executeUpdate(query.toString());
+		} catch (SQLException e) {
+			throw new GateKeeperException(e.toString());
+		}
 	}
 
 	public abstract T rowMapper(ResultSet rs);
 
 	private Connection getConnection() {
 		return this.connection;
+	}
+
+	private void initConnection() {
+		if (this.getConnection() == null) {
+			this.connection = DatabaseConnectionUtils.getConnection();
+		}
 	}
 
 	private String getTable() {

@@ -11,7 +11,7 @@ public class CRUDJanitor {
 	private Connection connection;
 
 	public CRUDJanitor() {
-		this.setConnection(DatabaseConnectionUtils.getConnection());
+		this.initConnection();
 	}
 
 	public void truncateAllTables() {
@@ -27,11 +27,11 @@ public class CRUDJanitor {
 		}
 	}
 
-	public Connection getConnection() {
+	private Connection getConnection() {
 		return connection;
 	}
 
-	public void setConnection(Connection connection) {
-		this.connection = connection;
+	private void initConnection() {
+		this.connection = DatabaseConnectionUtils.getConnection();
 	}
 }

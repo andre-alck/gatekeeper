@@ -172,7 +172,7 @@ public class CRUDUtilsTest implements Serializable {
 
 		// act
 		for (int i = 0; i < times; i++) {
-			XPTO xpto = new XPTO(generateRandomPrimaryKey(), -1, (byte) 127, 0.5f);
+			XPTO xpto = new XPTO(this.generateRandomPrimaryKey(), -1, (byte) 127, 0.5f);
 			utilsXPTO.create(xpto);
 		}
 		List<XPTO> xptos = (List<XPTO>) utilsXPTO.read();
@@ -191,7 +191,7 @@ public class CRUDUtilsTest implements Serializable {
 
 		// act
 		for (int i = 0; i < times; i++) {
-			Foo foo = new Foo(generateRandomPrimaryKey(), (byte) 127);
+			Foo foo = new Foo(this.generateRandomPrimaryKey(), (byte) 127);
 			utilsFoo.create(foo);
 		}
 		List<Foo> foos = (List<Foo>) utilsFoo.read();
@@ -238,6 +238,46 @@ public class CRUDUtilsTest implements Serializable {
 		assertEquals(newXpto.getP(), xptoFromDatabase.getP());
 		assertEquals(newXpto.getT(), xptoFromDatabase.getT());
 		assertEquals(newXpto.getO(), xptoFromDatabase.getO());
+	}
+
+	@Test
+	void deleteFoo() {
+		// arrange
+		new CRUDJanitor().truncateAllTables();
+		CRUDUtilsFoo utilsFoo = new CRUDUtilsFoo();
+		String primaryKey = this.generateRandomPrimaryKey();
+
+		// act
+		Foo foo = new Foo(primaryKey, (byte) -128);
+		utilsFoo.create(foo);
+		utilsFoo.delete(foo);
+
+		List<Foo> foos = (List<Foo>) utilsFoo.read();
+
+		// assert
+		int expectedSize = 0;
+		int actualSize = foos.size();
+		assertEquals(expectedSize, actualSize);
+	}
+
+	@Test
+	void deleteXPTO() {
+		// arrange
+		new CRUDJanitor().truncateAllTables();
+		CRUDUtilsXPTO utilsXPTO = new CRUDUtilsXPTO();
+		String primaryKey = this.generateRandomPrimaryKey();
+
+		// act
+		XPTO xpto = new XPTO(primaryKey, -1, (byte) -128, 0.5f);
+		utilsXPTO.create(xpto);
+		utilsXPTO.delete(xpto);
+
+		List<XPTO> xptos = (List<XPTO>) utilsXPTO.read();
+
+		// assert
+		int expectedSize = 0;
+		int actualSize = xptos.size();
+		assertEquals(expectedSize, actualSize);
 	}
 
 	private String generateRandomPrimaryKey() {

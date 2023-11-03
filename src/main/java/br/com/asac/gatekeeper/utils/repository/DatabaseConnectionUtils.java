@@ -42,20 +42,20 @@ public class DatabaseConnectionUtils implements Serializable {
 		return url.toString();
 	}
 
-	public static String getDatabaseDriver() {
-		return DATABASE_DRIVER;
+	private static String getDatabaseDriver() {
+		return DatabaseConnectionUtils.DATABASE_DRIVER;
 	}
 
-	public static String getDatabaseName() {
-		return DATABASE_NAME;
+	private static String getDatabaseName() {
+		return DatabaseConnectionUtils.DATABASE_NAME;
 	}
 
-	public static String getDatabaseUser() {
-		return DATABASE_USER;
+	private static String getDatabaseUser() {
+		return DatabaseConnectionUtils.DATABASE_USER;
 	}
 
-	public static String getDatabasePassword() {
-		return DATABASE_PASSWORD;
+	private static String getDatabasePassword() {
+		return DatabaseConnectionUtils.DATABASE_PASSWORD;
 	}
 
 }
