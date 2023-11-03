@@ -1,14 +1,14 @@
 package br.com.asac.gatekeeper.utils.repository;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.io.Serializable;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Random;
 
-import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
 import org.junit.jupiter.params.provider.ValueSource;
@@ -19,13 +19,11 @@ public class CRUDUtilsTest implements Serializable {
 
 	private static final long serialVersionUID = 5690872365954883302L;
 
-	private static int amountOfXPTOInsertedRegisters;
-	private static int amountOfFooInsertedRegisters;
-
 	private class XPTO implements Serializable {
 
 		private static final long serialVersionUID = 2523622552010222753L;
 
+		@Id
 		private String x;
 		private int p;
 		private byte t;
@@ -108,13 +106,16 @@ public class CRUDUtilsTest implements Serializable {
 
 		private static final long serialVersionUID = -2412047218655443890L;
 
+		@Id
 		private String bar;
+		private byte baz;
 
 		public Foo() {
 		}
 
-		public Foo(String bar) {
-			this.bar = bar;
+		public Foo(String bar, byte baz) {
+			this.setBar(bar);
+			this.setBaz(baz);
 		}
 
 		@SuppressWarnings("unused")
@@ -122,13 +123,21 @@ public class CRUDUtilsTest implements Serializable {
 			return bar;
 		}
 
-		public void setXpto(String bar) {
+		public void setBar(String bar) {
 			this.bar = bar;
+		}
+
+		@SuppressWarnings("unused")
+		public byte getBaz() {
+			return baz;
+		}
+
+		public void setBaz(byte baz) {
+			this.baz = baz;
 		}
 
 	}
 
-	// serialize?
 	private class CRUDUtilsFoo extends CRUDUtils<Foo> implements Serializable {
 
 		private static final long serialVersionUID = -8011793463540652452L;
@@ -141,7 +150,8 @@ public class CRUDUtilsTest implements Serializable {
 		public Foo rowMapper(ResultSet rs) {
 			Foo foo = new Foo();
 			try {
-				foo.setXpto(rs.getString("bar"));
+				foo.setBar(rs.getString("bar"));
+				foo.setBaz(rs.getByte("baz"));
 			} catch (SQLException e) {
 				throw new GateKeeperException(e.getMessage());
 			}
@@ -149,21 +159,9 @@ public class CRUDUtilsTest implements Serializable {
 		}
 	}
 
-	@BeforeAll
-	static void clear() {
+	@BeforeEach
+	void clear() {
 		new CRUDJanitor().truncateAllTables();
-	}
-
-	@Test
-	void givenEmptyDatabase_whenReadingData_thenListingShouldBeEmpty() {
-		// arrange
-		CRUDUtilsXPTO utilsXPTO = new CRUDUtilsXPTO();
-
-		// act
-		List<XPTO> xptos = (List<XPTO>) utilsXPTO.read();
-
-		// assert
-		assertTrue(xptos.isEmpty());
 	}
 
 	@ParameterizedTest
@@ -171,17 +169,16 @@ public class CRUDUtilsTest implements Serializable {
 	void givenXInsertions_whenReadingXPTOData_thenListingShouldReturnX(int times) {
 		// arrange
 		CRUDUtilsXPTO utilsXPTO = new CRUDUtilsXPTO();
-		CRUDUtilsTest.amountOfXPTOInsertedRegisters += times;
 
 		// act
 		for (int i = 0; i < times; i++) {
-			XPTO xpto = new XPTO("x", -1, (byte) 127, 0.5f);
+			XPTO xpto = new XPTO(generateRandomPrimaryKey(), -1, (byte) 127, 0.5f);
 			utilsXPTO.create(xpto);
 		}
 		List<XPTO> xptos = (List<XPTO>) utilsXPTO.read();
 
 		// assert
-		int expectedSize = amountOfXPTOInsertedRegisters;
+		int expectedSize = times;
 		int actualSize = xptos.size();
 		assertEquals(expectedSize, actualSize);
 	}
@@ -191,19 +188,66 @@ public class CRUDUtilsTest implements Serializable {
 	void givenXInsertions_whenReadingFooData_thenListingShouldReturnX(int times) {
 		// arrange
 		CRUDUtilsFoo utilsFoo = new CRUDUtilsFoo();
-		CRUDUtilsTest.amountOfFooInsertedRegisters += times;
 
 		// act
 		for (int i = 0; i < times; i++) {
-			Foo foo = new Foo("bar");
+			Foo foo = new Foo(generateRandomPrimaryKey(), (byte) 127);
 			utilsFoo.create(foo);
 		}
 		List<Foo> foos = (List<Foo>) utilsFoo.read();
 
 		// assert
-		int expectedSize = amountOfFooInsertedRegisters;
+		int expectedSize = times;
 		int actualSize = foos.size();
 		assertEquals(expectedSize, actualSize);
 	}
 
+	@Test
+	void updateFoo() {
+		// arrange
+		CRUDUtilsFoo utilsFoo = new CRUDUtilsFoo();
+		String primaryKey = generateRandomPrimaryKey();
+
+		// act
+		Foo foo = new Foo(primaryKey, (byte) -128);
+		utilsFoo.create(foo);
+		Foo newFoo = new Foo(primaryKey, (byte) 127);
+		utilsFoo.update(newFoo);
+
+		// assert
+		Foo fooFromDatabase = utilsFoo.find(newFoo);
+		assertEquals(newFoo.getBar(), fooFromDatabase.getBar());
+		assertEquals(newFoo.getBaz(), fooFromDatabase.getBaz());
+	}
+
+	@Test
+	void updateXPTO() {
+		// arrange
+		CRUDUtilsXPTO utilsXPTO = new CRUDUtilsXPTO();
+		String primaryKey = generateRandomPrimaryKey();
+
+		// act
+		XPTO xpto = new XPTO(primaryKey, -1, (byte) -128, 0.5f);
+		utilsXPTO.create(xpto);
+		XPTO newXpto = new XPTO(primaryKey, +1, (byte) 127, 1);
+		utilsXPTO.update(newXpto);
+
+		// assert
+		XPTO xptoFromDatabase = utilsXPTO.find(newXpto);
+		assertEquals(newXpto.getX(), xptoFromDatabase.getX());
+		assertEquals(newXpto.getP(), xptoFromDatabase.getP());
+		assertEquals(newXpto.getT(), xptoFromDatabase.getT());
+		assertEquals(newXpto.getO(), xptoFromDatabase.getO());
+	}
+
+	private String generateRandomPrimaryKey() {
+		char randomLetters[] = new char[10];
+		Random random = new Random();
+
+		for (int i = 0; i < 10; i++) {
+			randomLetters[i] = (char) (random.nextInt(26) + 'a');
+		}
+
+		return String.valueOf(randomLetters);
+	}
 }

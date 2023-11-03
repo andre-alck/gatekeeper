@@ -6,7 +6,12 @@ import java.sql.Connection;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
 
 import br.com.asac.gatekeeper.utils.crosscutting.GateKeeperException;
 
@@ -19,7 +24,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 	public CRUDUtils(String table) {
 		connection = DatabaseConnectionUtils.getConnection();
-		this.table = table;
+		this.setTable(table);
 	}
 
 	@Override
@@ -29,7 +34,6 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		} catch (Exception e) {
 			throw new GateKeeperException(e.getMessage());
 		}
-
 	}
 
 	private String insertGenericQueryForT(T t) {
@@ -38,54 +42,60 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 		query.append(this.getTable());
 		query.append("(");
 
-		Field[] fieldsFromGenericClass = t.getClass().getDeclaredFields();
+		List<Field> fieldsFromGenericClass = retrieveValidFieldsFromGenericClass(t);
+		fieldsFromGenericClass.forEach(field -> {
+			query.append(field.getName());
+			query.append(", ");
+		});
 
-		for (int i = 0; i < fieldsFromGenericClass.length; i++) {
-			if (isFieldValid(fieldsFromGenericClass[i])) {
-				query.append(fieldsFromGenericClass[i].getName());
-
-				if (i == fieldsFromGenericClass.length - 2) {
-					break;
-				} else {
-					query.append(", ");
-				}
-			}
-		}
+		deleteExtraCommaAndSpace(query);
 		query.append(") VALUES (");
 
-		for (int i = 0; i < fieldsFromGenericClass.length; i++) {
-			if (isFieldValid(fieldsFromGenericClass[i])) {
-				String classAttributeCapitalized = fieldsFromGenericClass[i].getName().substring(0, 1).toUpperCase()
-						+ fieldsFromGenericClass[i].getName().substring(1,
-								fieldsFromGenericClass[i].getName().length());
-				String getter = "get" + classAttributeCapitalized;
-				String value = null;
-				try {
-					value = String.valueOf(t.getClass().getMethod(getter).invoke(t));
-				} catch (Exception e) {
-					throw new GateKeeperException(e.getMessage());
-				}
-				if (fieldsFromGenericClass[i].getType().getName().equals("java.lang.String")) {
-					query.append("\"");
-					query.append(value);
-					query.append("\"");
-				} else {
-					query.append(value);
-				}
+		fieldsFromGenericClass.forEach(field -> {
+			String getter = generateGetterMethodSignature(field.getName());
+			String value = null;
 
-				if (i == fieldsFromGenericClass.length - 2) {
-					break;
-				} else {
-					query.append(", ");
-				}
+			try {
+				value = String.valueOf(t.getClass().getMethod(getter).invoke(t));
+			} catch (Exception e) {
+				throw new GateKeeperException(e.getMessage());
 			}
-		}
+
+			if (field.getType().getName().equals("java.lang.String")) {
+				query.append("\"");
+				query.append(value);
+				query.append("\"");
+			} else {
+				query.append(value);
+			}
+
+			query.append(", ");
+		});
+
+		deleteExtraCommaAndSpace(query);
 		query.append(")");
 		return query.toString();
 	}
 
+	private List<Field> retrieveValidFieldsFromGenericClass(T t) {
+		List<Field> allFields = Arrays.asList(t.getClass().getDeclaredFields());
+		return allFields.stream().filter(tElement -> isFieldValid(tElement)).toList();
+	}
+
 	private boolean isFieldValid(Field field) {
 		return !(field.getName().contains("this") || field.getName().contains("serialVersionUID"));
+	}
+
+	private void deleteExtraCommaAndSpace(StringBuilder query) {
+		query.deleteCharAt(query.length() - 1);
+		query.deleteCharAt(query.length() - 1);
+	}
+
+	private String generateGetterMethodSignature(String name) {
+		String firstLetterOfFieldNameCapitalized = name.substring(0, 1).toUpperCase();
+		String remainderOfFieldName = name.substring(1, name.length());
+		String classAttributeCapitalized = firstLetterOfFieldNameCapitalized + remainderOfFieldName;
+		return "get" + classAttributeCapitalized;
 	}
 
 	@Override
@@ -116,6 +126,150 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 	@Override
 	public void update(T t) {
+		Map<String, Object> map = retrieveMapBetweenFieldNameAndItsValue(t);
+		String key = map.keySet().iterator().next();
+		Object value = map.get(key);
+
+		StringBuilder query = new StringBuilder();
+		query.append("UPDATE ");
+		query.append(this.getTable());
+		query.append(" SET ");
+
+		T tfromDatabase = find(t);
+		generateUpdateBasedOnFieldsOfGenericClass(t, tfromDatabase, query);
+
+		query.append(" WHERE ");
+
+		query.append(key);
+		query.append(" = \"");
+
+		query.append(value);
+		query.append("\"");
+		
+		try {
+			this.getConnection().createStatement().executeUpdate(query.toString());
+		} catch (Exception e) {
+			throw new GateKeeperException(e.getMessage());
+		}
+	}
+
+	private Map<String, Object> retrieveMapBetweenFieldNameAndItsValue(T t) {
+		String nameOfIdField = retrieveNameOfIdFieldFromGenericClass(t);
+		Object valueOfIdField = retrieveValueOfIdField(t, nameOfIdField);
+
+		Map<String, Object> idAndValue = new HashMap<>();
+		idAndValue.put(nameOfIdField, valueOfIdField);
+
+		return idAndValue;
+	}
+
+	private String retrieveNameOfIdFieldFromGenericClass(T t) {
+		Optional<Field> optionalOfIdField = retrieveOptionalOfIdField(t);
+		return optionalOfIdField.get().getName();
+	}
+
+	private Optional<Field> retrieveOptionalOfIdField(T t) {
+		Optional<Field> optionalOfIdField = retrieveValidFieldsFromGenericClass(t).stream()
+				.filter(tElement -> tElement.isAnnotationPresent(Id.class)).findFirst();
+
+		if (optionalOfIdField.isEmpty()) {
+			StringBuilder exception = new StringBuilder();
+			exception.append("No fields with the ");
+			exception.append(Id.class.getName());
+			exception.append(" annotation were found in the with ");
+			exception.append(t.getClass().getName());
+			exception.append(" class.");
+			throw new GateKeeperException(exception.toString());
+		}
+
+		return optionalOfIdField;
+	}
+
+	private List<Field> retrieveValidFieldsFromGenericClassForUpdate(T t) {
+		List<Field> validFields = new ArrayList<>(retrieveValidFieldsFromGenericClass(t));
+		validFields.removeIf(f -> f.isAnnotationPresent(Id.class));
+		return validFields;
+	}
+
+	private Object retrieveValueOfIdField(T t, String nameOfIdField) {
+		String getter = generateGetterMethodSignature(nameOfIdField);
+		Object value = null;
+		try {
+			value = (Object) t.getClass().getMethod(getter).invoke(t);
+		} catch (Exception e) {
+			throw new GateKeeperException(e.getMessage());
+		}
+
+		return value;
+	}
+
+	private void generateUpdateBasedOnFieldsOfGenericClass(T tNew, T tfromDatabase, StringBuilder query) {
+		List<Field> validFieldsFromGenericClass = retrieveValidFieldsFromGenericClassForUpdate(tNew);
+		validFieldsFromGenericClass.forEach(field -> {
+			String getter = generateGetterMethodSignature(field.getName());
+			String valueNew;
+			String valueFromDatabase;
+
+			try {
+				valueNew = String.valueOf(tNew.getClass().getMethod(getter).invoke(tNew));
+				valueFromDatabase = String.valueOf(tfromDatabase.getClass().getMethod(getter).invoke(tfromDatabase));
+
+				if (!valueNew.equals(valueFromDatabase)) {
+					query.append(field.getName());
+					query.append(" = ");
+					if (field.getType().getName().equals("java.lang.String")) {
+						query.append("\"");
+						query.append(valueNew);
+						query.append("\"");
+						query.append(", ");
+					} else {
+						query.append(valueNew);
+						query.append(", ");
+					}
+
+				}
+			} catch (Exception e) {
+				throw new GateKeeperException(e.getMessage());
+			}
+		});
+		deleteExtraCommaAndSpace(query);
+	}
+
+	public T find(T t) {
+		Map<String, Object> map = retrieveMapBetweenFieldNameAndItsValue(t);
+		String key = map.keySet().iterator().next();
+		Object value = map.get(key);
+
+		StringBuilder query = new StringBuilder();
+		query.append("SELECT * FROM ");
+		query.append(this.getTable());
+		query.append(" WHERE ");
+
+		query.append(key);
+		query.append(" = \"");
+
+		query.append(value);
+		query.append("\"");
+
+		T tFromDatabase = null;
+		ResultSet rs = null;
+		try {
+			rs = connection.createStatement().executeQuery(query.toString());
+
+			while (rs.next()) {
+				tFromDatabase = rowMapper(rs);
+			}
+		} catch (SQLException e) {
+			throw new GateKeeperException(e.getMessage());
+		} finally {
+			try {
+				rs.close();
+			} catch (SQLException e) {
+				throw new GateKeeperException(e.getMessage());
+			}
+		}
+
+		return tFromDatabase;
 	}
 
 	@Override
@@ -124,11 +278,19 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 
 	public abstract T rowMapper(ResultSet rs);
 
-	public Connection getConnection() {
-		return connection;
+	private Connection getConnection() {
+		return this.connection;
 	}
 
-	public String getTable() {
-		return table;
+	private String getTable() {
+		return this.table;
+	}
+
+	private void setTable(String table) {
+		if (table != null) {
+			this.table = table;
+		} else {
+			throw new GateKeeperException("Table cannot be null.");
+		}
 	}
 }
