@@ -10,16 +10,17 @@ public class SignUpService implements Serializable {
 
 	private static final long serialVersionUID = 4238282803098411106L;
 
-	private SignUpRepository signUpRepository;
 	private UserService userService;
+	private SignUpRepository signUpRepository;
 
 	public SignUpService() {
-		this.setSignUpRepository(new SignUpRepository());
 		this.setUserService(new UserService());
+		this.setSignUpRepository(new SignUpRepository());
 	}
 
-	public SignUpService(SignUpRepository signUpRepository) {
-		this.signUpRepository = signUpRepository;
+	public SignUpService(UserService userService, SignUpRepository signUpRepository) {
+		this.setUserService(userService);
+		this.setSignUpRepository(signUpRepository);
 	}
 
 	public void signUp(User user) {
@@ -28,20 +29,20 @@ public class SignUpService implements Serializable {
 		}
 	}
 
-	public SignUpRepository getSignUpRepository() {
-		return signUpRepository;
-	}
-
-	public void setSignUpRepository(SignUpRepository signUpRepository) {
-		this.signUpRepository = signUpRepository;
-	}
-
 	public UserService getUserService() {
-		return userService;
+		return this.userService;
 	}
 
 	public void setUserService(UserService userService) {
 		this.userService = userService;
+	}
+
+	public SignUpRepository getSignUpRepository() {
+		return this.signUpRepository;
+	}
+
+	public void setSignUpRepository(SignUpRepository signUpRepository) {
+		this.signUpRepository = signUpRepository;
 	}
 
 }

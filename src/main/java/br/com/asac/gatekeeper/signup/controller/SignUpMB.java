@@ -20,30 +20,33 @@ public class SignUpMB implements Serializable {
 	private SignUpService signUpService;
 	private UserService userService;
 	private UIComponentUtils uiComponentUtils;
-	public static String USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE = "username-already-taken";
+	private static final String USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE = "username-already-taken";
 
 	public SignUpMB() {
-		user = new User();
-		signUpService = new SignUpService();
-		uiComponentUtils = new UiComponentUtilsPrimeFaces();
+		this.setUser(new User());
+		this.setSignUpService(new SignUpService());
+		this.setUserService(new UserService());
+		this.setUiComponentUtils(new UiComponentUtilsPrimeFaces());
 	}
 
-	public SignUpMB(User user, SignUpService signUpService, UIComponentUtils uiComponentUtils) {
-		this.user = user;
-		this.signUpService = signUpService;
-		this.uiComponentUtils = uiComponentUtils;
+	public SignUpMB(User user, SignUpService signUpService, UserService userService,
+			UIComponentUtils uiComponentUtils) {
+		this.setUser(user);
+		this.setSignUpService(signUpService);
+		this.setUserService(userService);
+		this.setUiComponentUtils(uiComponentUtils);
 	}
 
 	public void signUp() {
 		if (this.getUserService().isUserRegistered(this.getUser())) {
-			this.getUiComponentUtils().showDialog((USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE));
+			this.getUiComponentUtils().showDialog(SignUpMB.USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE);
 		} else {
 			this.getSignUpService().signUp(this.getUser());
 		}
 	}
 
 	public User getUser() {
-		return user;
+		return this.user;
 	}
 
 	public void setUser(User user) {
@@ -51,7 +54,7 @@ public class SignUpMB implements Serializable {
 	}
 
 	public SignUpService getSignUpService() {
-		return signUpService;
+		return this.signUpService;
 	}
 
 	public void setSignUpService(SignUpService signUpService) {
@@ -59,7 +62,7 @@ public class SignUpMB implements Serializable {
 	}
 
 	public UserService getUserService() {
-		return userService;
+		return this.userService;
 	}
 
 	public void setUserService(UserService userService) {
@@ -67,10 +70,15 @@ public class SignUpMB implements Serializable {
 	}
 
 	public UIComponentUtils getUiComponentUtils() {
-		return uiComponentUtils;
+		return this.uiComponentUtils;
 	}
 
 	public void setUiComponentUtils(UIComponentUtils uiComponentUtils) {
 		this.uiComponentUtils = uiComponentUtils;
 	}
+
+	public static String getUsernameAlreadyTokenDialogMessage() {
+		return SignUpMB.USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE;
+	}
+
 }
