@@ -2,6 +2,7 @@ package br.com.asac.gatekeeper.user.service;
 
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Optional;
 
 import br.com.asac.gatekeeper.user.model.User;
 import br.com.asac.gatekeeper.user.repository.UserRepository;
@@ -18,7 +19,8 @@ public class UserService implements CRUDOperations<User>, Serializable {
 	}
 
 	public boolean isUserRegistered(User user) {
-		return this.getUserRepository().isUserRegistered(user);
+		User userFromDatabase = this.getUserRepository().find(user);
+		return userFromDatabase != null;
 	}
 
 	@Override
@@ -42,7 +44,7 @@ public class UserService implements CRUDOperations<User>, Serializable {
 	}
 
 	public UserRepository getUserRepository() {
-		return userRepository;
+		return this.userRepository;
 	}
 
 	public void setUserRepository(UserRepository userRepository) {

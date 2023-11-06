@@ -178,7 +178,7 @@ public abstract class CRUDUtils<T> implements CRUDOperations<T>, Serializable {
 			StringBuilder exception = new StringBuilder();
 			exception.append("No fields with the ");
 			exception.append(Id.class.getName());
-			exception.append(" annotation were found in the with ");
+			exception.append(" annotation were found in the ");
 			exception.append(t.getClass().getName());
 			exception.append(" class.");
 			throw new GateKeeperException(exception.toString());

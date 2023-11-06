@@ -2,10 +2,13 @@ package br.com.asac.gatekeeper.user.model;
 
 import java.io.Serializable;
 
+import br.com.asac.gatekeeper.utils.repository.Id;
+
 public class User implements Serializable {
 
 	private static final long serialVersionUID = 5838614084149816599L;
 
+	@Id
 	private String name;
 	private String password;
 

@@ -19,9 +19,11 @@
 				requiredMessage="Please fill in the 'Password' field."
 				messageValue="Password" />
 		</p:panelGrid>
+
 		<p:commandButton value="Submit" type="submit" update="grid"
- 			action="#{signUpMB.signUp}" />
+			action="#{signUpMB.signUp}" />
 	</h:form>
+
 
 	<p:dialog id="dialog" widgetVar="username-already-taken" header="Oops!"
 		modal="true">

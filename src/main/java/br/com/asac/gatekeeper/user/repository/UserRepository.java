@@ -15,11 +15,6 @@ public class UserRepository extends CRUDUtils<User> implements Serializable {
 		super("user");
 	}
 
-	public boolean isUserRegistered(User user) {
-		// TODO Auto-generated method stub
-		return false;
-	}
-
 	@Override
 	public User rowMapper(ResultSet rs) {
 		User user = new User();
