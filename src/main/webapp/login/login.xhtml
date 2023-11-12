@@ -23,9 +23,7 @@
 				messageValue="Password">
 			</common:requiredTextInput>
 		</p:panelGrid>
-
-		<p:commandButton value="Submit" type="submit" update="grid"
-			action="#{loginMB.login}" />
+		<p:commandButton value="Submit" action="#{loginMB.login()}" />
 	</h:form>
 
 	<p:dialog id="dialog" widgetVar="couldnt-identify-user" header="Oops!"

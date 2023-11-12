@@ -3,6 +3,7 @@ package br.com.asac.gatekeeper.signup.controller;
 import java.io.Serializable;
 
 import br.com.asac.gatekeeper.signup.service.SignUpService;
+import br.com.asac.gatekeeper.success.SuccessConsts;
 import br.com.asac.gatekeeper.user.model.User;
 import br.com.asac.gatekeeper.user.service.UserService;
 import br.com.asac.gatekeeper.utils.controller.UIComponentUtils;
@@ -37,12 +38,14 @@ public class SignUpMB implements Serializable {
 		this.setUiComponentUtils(uiComponentUtils);
 	}
 
-	public void signUp() {
+	public String signUp() {
 		if (this.getUserService().isUserRegistered(this.getUser())) {
 			this.getUiComponentUtils().showDialog(SignUpMB.USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE);
-		} else {
-			this.getSignUpService().signUp(this.getUser());
+			return "";
 		}
+
+		this.getSignUpService().signUp(this.getUser());
+		return SuccessConsts.getSuccessPageRoute();
 	}
 
 	public User getUser() {

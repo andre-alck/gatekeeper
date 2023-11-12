@@ -2,6 +2,7 @@ package br.com.asac.gatekeeper.login.controller;
 
 import java.io.Serializable;
 
+import br.com.asac.gatekeeper.success.SuccessConsts;
 import br.com.asac.gatekeeper.user.model.User;
 import br.com.asac.gatekeeper.user.service.UserService;
 import br.com.asac.gatekeeper.utils.controller.UIComponentUtils;
@@ -19,7 +20,6 @@ public class LoginMB implements Serializable {
 	private UserService userService;
 	private UIComponentUtils uiComponentUtils;
 	private static final String COULDNT_IDENTIFY_USER_DIALOG_ID = "couldnt-identify-user";
-	public static final String SUCCESS_PAGE_ROUTE = "success.jsf";
 
 	public LoginMB() {
 		this.setUser(new User());
@@ -35,12 +35,11 @@ public class LoginMB implements Serializable {
 
 	public String login() {
 		if (this.getUserService().isUserRegistered(this.getUser())) {
-			// return LoginMB.SUCCESS_PAGE_ROUTE + "?faces-redirect=true";
-			return LoginMB.SUCCESS_PAGE_ROUTE;
+			return SuccessConsts.getSuccessPageRoute();
 		}
 
 		this.getUiComponentUtils().showDialog(LoginMB.COULDNT_IDENTIFY_USER_DIALOG_ID);
-		return null;
+		return "";
 	}
 
 	public User getUser() {
@@ -69,9 +68,5 @@ public class LoginMB implements Serializable {
 
 	public static String getCouldntIdentifyUserDialogId() {
 		return LoginMB.COULDNT_IDENTIFY_USER_DIALOG_ID;
-	}
-
-	public static String getSuccessPageRoute() {
-		return LoginMB.SUCCESS_PAGE_ROUTE;
 	}
 }

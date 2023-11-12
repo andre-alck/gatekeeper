@@ -1,6 +1,7 @@
 package br.com.asac.gatekeeper.signup.controller;
 
 import static org.junit.Assert.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -12,6 +13,7 @@ import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import br.com.asac.gatekeeper.signup.service.SignUpService;
+import br.com.asac.gatekeeper.success.SuccessConsts;
 import br.com.asac.gatekeeper.user.service.UserService;
 import br.com.asac.gatekeeper.utils.controller.UIComponentUtils;
 
@@ -38,9 +40,10 @@ public class SignUpMBTest {
 				this.getUiComponentUtils());
 
 		// act
-		signUpMB.signUp();
+		String successPageRoute = signUpMB.signUp();
 
 		// assert
+		assertEquals(SuccessConsts.getSuccessPageRoute(), successPageRoute);
 		verify(this.getUserService(), times(1)).isUserRegistered(any());
 		verify(this.getUiComponentUtils(), times(0)).showDialog(SignUpMB.getUsernameAlreadyTokenDialogMessage());
 		verify(this.getSignUpService(), times(1)).signUp(any());
@@ -56,9 +59,10 @@ public class SignUpMBTest {
 				this.getUiComponentUtils());
 
 		// act
-		signUpMB.signUp();
+		String successPageRoute = signUpMB.signUp();
 
 		// assert
+		assertEquals("", successPageRoute);
 		verify(this.getUserService(), times(1)).isUserRegistered(any());
 		verify(this.getUiComponentUtils(), times(1)).showDialog(SignUpMB.getUsernameAlreadyTokenDialogMessage());
 		verify(this.getSignUpService(), times(0)).signUp(any());

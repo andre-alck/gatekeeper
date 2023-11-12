@@ -1,9 +1,7 @@
 package br.com.asac.gatekeeper.login.controller;
 
-import static org.junit.Assert.assertNull;
 import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
@@ -14,6 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
+import br.com.asac.gatekeeper.success.SuccessConsts;
 import br.com.asac.gatekeeper.user.service.UserService;
 import br.com.asac.gatekeeper.utils.controller.UIComponentUtils;
 
@@ -38,7 +37,7 @@ public class LoginMBTest {
 		String successPageRoute = loginMB.login();
 
 		// assert
-		assertNull(successPageRoute);
+		assertEquals("", successPageRoute);
 		verify(this.getUserService(), times(1)).isUserRegistered(any());
 		verify(this.getUiComponentUtils(), times(1)).showDialog(LoginMB.getCouldntIdentifyUserDialogId());
 	}
@@ -54,7 +53,7 @@ public class LoginMBTest {
 		String successPageRoute = loginMB.login();
 
 		// assert
-		assertEquals(successPageRoute, LoginMB.SUCCESS_PAGE_ROUTE);
+		assertEquals(SuccessConsts.getSuccessPageRoute(), successPageRoute);
 		verify(this.getUserService(), times(1)).isUserRegistered(any());
 		verify(this.getUiComponentUtils(), times(0)).showDialog(LoginMB.getCouldntIdentifyUserDialogId());
 	}
