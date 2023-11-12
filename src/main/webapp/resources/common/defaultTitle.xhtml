@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:composite="http://xmlns.jcp.org/jsf/composite">
+
+<composite:interface>
+	<composite:attribute name="title" />
+</composite:interface>
+
+<composite:implementation>
+	<p:outputLabel value="#{cc.attrs.title}"
+		style="color: #2194f3; font-weight:bold; font-size:24px"></p:outputLabel>
+</composite:implementation>
+
+</html>
