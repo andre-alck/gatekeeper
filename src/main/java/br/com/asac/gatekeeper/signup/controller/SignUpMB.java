@@ -39,7 +39,7 @@ public class SignUpMB implements Serializable {
 	}
 
 	public String signUp() {
-		if (this.getUserService().isUserRegistered(this.getUser())) {
+		if (this.getUserService().isUserNameAlreadyTaken(this.getUser())) {
 			this.getUiComponentUtils().showDialog(SignUpMB.USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE);
 			return "";
 		}

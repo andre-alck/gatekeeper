@@ -18,9 +18,14 @@ public class UserService implements CRUDOperations<User>, Serializable {
 		this.setUserRepository(new UserRepository());
 	}
 
-	public boolean isUserRegistered(User user) {
+	public boolean isUserNameAlreadyTaken(User user) {
 		User userFromDatabase = this.getUserRepository().find(user);
 		return userFromDatabase != null;
+	}
+
+	public boolean isUserRegistered(User user) {
+		User userFromDatabase = this.getUserRepository().find(user);
+		return userFromDatabase.getPassword().equals(user.getPassword());
 	}
 
 	@Override

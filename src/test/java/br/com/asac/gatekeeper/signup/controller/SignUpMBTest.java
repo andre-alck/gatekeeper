@@ -44,7 +44,7 @@ public class SignUpMBTest {
 
 		// assert
 		assertEquals(SuccessConsts.getSuccessPageRoute(), successPageRoute);
-		verify(this.getUserService(), times(1)).isUserRegistered(any());
+		verify(this.getUserService(), times(1)).isUserNameAlreadyTaken(any());
 		verify(this.getUiComponentUtils(), times(0)).showDialog(SignUpMB.getUsernameAlreadyTokenDialogMessage());
 		verify(this.getSignUpService(), times(1)).signUp(any());
 	}
@@ -63,7 +63,7 @@ public class SignUpMBTest {
 
 		// assert
 		assertEquals("", successPageRoute);
-		verify(this.getUserService(), times(1)).isUserRegistered(any());
+		verify(this.getUserService(), times(1)).isUserNameAlreadyTaken(any());
 		verify(this.getUiComponentUtils(), times(1)).showDialog(SignUpMB.getUsernameAlreadyTokenDialogMessage());
 		verify(this.getSignUpService(), times(0)).signUp(any());
 	}
@@ -78,7 +78,7 @@ public class SignUpMBTest {
 
 	private UserService createRegisteredUserUserServiceMock() {
 		UserService userService = this.createMockedUserService();
-		when(userService.isUserRegistered(any())).thenReturn(true);
+		when(userService.isUserNameAlreadyTaken(any())).thenReturn(true);
 		return userService;
 	}
 

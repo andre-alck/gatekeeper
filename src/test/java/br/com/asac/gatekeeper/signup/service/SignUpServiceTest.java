@@ -36,7 +36,7 @@ public class SignUpServiceTest {
 		signUpService.signUp(null);
 
 		// assert
-		verify(this.getUserService(), times(1)).isUserRegistered(any());
+		verify(this.getUserService(), times(1)).isUserNameAlreadyTaken(any());
 		verify(this.getSignUpRepository(), times(1)).signUp(any());
 	}
 
@@ -51,7 +51,7 @@ public class SignUpServiceTest {
 		signUpService.signUp(null);
 
 		// assert
-		verify(this.getUserService(), times(1)).isUserRegistered(any());
+		verify(this.getUserService(), times(1)).isUserNameAlreadyTaken(any());
 		verify(this.getSignUpRepository(), times(0)).signUp(any());
 	}
 
@@ -62,7 +62,7 @@ public class SignUpServiceTest {
 
 	private UserService createRegisteredUserUserServiceMock() {
 		UserService userService = this.createMockedUserService();
-		when(userService.isUserRegistered(any())).thenReturn(true);
+		when(userService.isUserNameAlreadyTaken(any())).thenReturn(true);
 		return userService;
 	}
 

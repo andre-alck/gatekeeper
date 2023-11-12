@@ -24,7 +24,7 @@ public class SignUpService implements Serializable {
 	}
 
 	public void signUp(User user) {
-		if (!this.getUserService().isUserRegistered(user)) {
+		if (!this.getUserService().isUserNameAlreadyTaken(user)) {
 			this.getSignUpRepository().signUp(user);
 		}
 	}
