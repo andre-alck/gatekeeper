@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en" xmlns="http://www.w3.org/1999/xhtml"
+	xmlns:f="http://xmlns.jcp.org/jsf/core"
+	xmlns:h="http://xmlns.jcp.org/jsf/html"
+	xmlns:p="http://primefaces.org/ui"
+	xmlns:common="http://xmlns.jcp.org/jsf/composite/common">
+
+<h:head>
+	<title>Login</title>
+</h:head>
+
+<h:body>
+	<common:defaultTitle title="Login"></common:defaultTitle>
+
+	<h:form>
+		<p:panelGrid id="grid" columns="1">
+			<common:requiredTextInput inputTextValue="#{loginMB.user.name}"
+				requiredMessage="Please fill in the 'Username' field."
+				messageValue="Username">
+			</common:requiredTextInput>
+			<common:requiredTextInput inputTextValue="#{loginMB.user.password}"
+				requiredMessage="Please fill in the 'Password' field."
+				messageValue="Password">
+			</common:requiredTextInput>
+		</p:panelGrid>
+
+		<p:commandButton value="Submit" type="submit" update="grid"
+			action="#{loginMB.login}" />
+	</h:form>
+
+	<p:dialog id="dialog" widgetVar="couldnt-identify-user" header="Oops!"
+		modal="true">
+		<h:outputText
+			value="Sorry, we couldn't identify a user with these credentials. Please review your information and try again." />
+	</p:dialog>
+</h:body>
+
+
+</html>
