@@ -2,6 +2,7 @@ package br.com.asac.gatekeeper.login.controller;
 
 import java.io.Serializable;
 
+import br.com.asac.gatekeeper.signup.controller.SignUpMB;
 import br.com.asac.gatekeeper.success.SuccessConsts;
 import br.com.asac.gatekeeper.user.model.User;
 import br.com.asac.gatekeeper.user.service.UserService;
@@ -40,6 +41,10 @@ public class LoginMB implements Serializable {
 
 		this.getUiComponentUtils().showDialog(LoginMB.COULDNT_IDENTIFY_USER_DIALOG_ID);
 		return "";
+	}
+
+	public String redirectToSignUpPage() {
+		return SignUpMB.getSignUpPageRoute() + "?faces-redirect=true";
 	}
 
 	public User getUser() {
