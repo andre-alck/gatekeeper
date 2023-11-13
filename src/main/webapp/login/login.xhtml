@@ -26,6 +26,13 @@
 		<p:commandButton value="Submit" action="#{loginMB.login()}" />
 	</h:form>
 
+	<h:panelGroup layout="block" style="margin-top:50px;" />
+
+	<h:form>
+		<p:commandButton value="Sign up by clicking this button. Easy! 😊👍"
+			action="#{loginMB.redirectToSignUpPage()}" />
+	</h:form>
+
 	<p:dialog id="dialog" widgetVar="couldnt-identify-user" header="Oops!"
 		modal="true">
 		<h:outputText

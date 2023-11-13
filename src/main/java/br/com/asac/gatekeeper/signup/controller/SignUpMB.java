@@ -22,6 +22,7 @@ public class SignUpMB implements Serializable {
 	private UserService userService;
 	private UIComponentUtils uiComponentUtils;
 	private static final String USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE = "username-already-taken";
+	private static final String SIGN_UP_PAGE_ROUTE = "/signup/signUp";
 
 	public SignUpMB() {
 		this.setUser(new User());
@@ -82,6 +83,10 @@ public class SignUpMB implements Serializable {
 
 	public static String getUsernameAlreadyTokenDialogMessage() {
 		return SignUpMB.USERNAME_ALREADY_TOKEN_DIALOG_MESSAGE;
+	}
+
+	public static String getSignUpPageRoute() {
+		return SignUpMB.SIGN_UP_PAGE_ROUTE;
 	}
 
 }
